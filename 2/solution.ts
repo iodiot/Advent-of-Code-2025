@@ -2,7 +2,19 @@
 
 import fs from 'fs';
 
-function findInvalid(ranges: number[][]): number {
+function findOccurrences(str: string, search: string): number {
+  let index = str.indexOf(search);
+  let n = 0;
+
+  while (index !== -1) {
+    index = str.indexOf(search, index + search.length);
+    n += 1;
+  }
+
+  return n;
+}
+
+function findInvalid(ranges: number[][], moreThanTwo = false): number {
   let sum = 0;
 
   for (const range of ranges) {
@@ -10,11 +22,19 @@ function findInvalid(ranges: number[][]): number {
       const str = i.toString();
       const len = str.length;
 
-      if (len % 2 === 0) {
-        const l = str.slice(0, len / 2);
-        const r = str.slice(len / 2);
+      if (moreThanTwo) {
+        for (let j = 1; j <= Math.floor(len / 2); ++j) {
+          const n = findOccurrences(str, str.slice(0, j));
 
-        sum += l === r ? i : 0;
+          if (j * n === len  && n >= 2) {
+            sum += i;
+            break;
+          }
+        }
+      } else {
+        if (len % 2 === 0) {
+          sum += findOccurrences(str, str.slice(0, len / 2)) === 2 ? i : 0;
+        }
       }
     }
   }
@@ -29,6 +49,7 @@ const ranges: number[][] = fs.readFileSync('./input.txt', 'utf8')
   .map(r => r.trim().split('-').map(Number));
 
 console.log(`part 1: ${ findInvalid(ranges) }`);
-console.log(`part 2: ${0}`);
+console.log(`part 2: ${ findInvalid(ranges, true) }`);
 
 console.timeEnd('time');
+
